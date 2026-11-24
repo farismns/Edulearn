@@ -37,20 +37,26 @@ export const createUserWithVerificationToken = async ({
     await client.query("BEGIN");
 
     if (enforceSingleAccount) {
-      // Serialize initial account registration in Production.
+      // Serialize the initial registration lifecycle in Production. A pending
+      // account reserves the single-account slot until it is verified; after
+      // activation, registration remains permanently closed.
       await client.query(`
         SELECT pg_advisory_xact_lock(741852963)
       `);
 
       const existingUser = await client.query(`
-        SELECT id
+        SELECT id, email_verified_at
         FROM edulearn.users
         LIMIT 1
       `);
 
       if (existingUser.rowCount > 0) {
         await client.query("ROLLBACK");
-        return null;
+        return {
+          status: existingUser.rows[0].email_verified_at
+            ? "activated"
+            : "pending",
+        };
       }
     }
 

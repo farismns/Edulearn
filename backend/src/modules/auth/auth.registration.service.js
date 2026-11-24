@@ -12,6 +12,7 @@ import AppError from "../../utils/AppError.js";
 import { timingSafeEqual } from "node:crypto";
 
 const VERIFICATION_TOKEN_EXPIRY_MINUTES = 15;
+const REGISTRATION_UNAVAILABLE_MESSAGE = "Registration is unavailable.";
 
 const verifySetupSecret = (providedSecret) => {
   const configuredSecret = process.env.SETUP_SECRET;
@@ -69,8 +70,8 @@ export const registerUser = async ({
       enforceSingleAccount: isProduction,
     });
 
-    if (!registration) {
-      throw new AppError("An account has already been registered.", 409);
+    if (!registration || registration.status) {
+      throw new AppError(REGISTRATION_UNAVAILABLE_MESSAGE, 409);
     }
 
     return {
@@ -83,10 +84,7 @@ export const registerUser = async ({
     };
   } catch (error) {
     if (error.code === "23505") {
-      throw new AppError(
-        "An account with this email address already exists.",
-        409,
-      );
+      throw new AppError(REGISTRATION_UNAVAILABLE_MESSAGE, 409);
     }
 
     throw error;

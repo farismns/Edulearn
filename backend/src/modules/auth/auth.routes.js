@@ -22,16 +22,38 @@ import validate from "../../middlewares/validate.middleware.js";
 import {
   resendVerificationIpLimiter,
   resendVerificationEmailLimiter,
+  registerIpLimiter,
+  registerEmailLimiter,
+  verifyEmailIpLimiter,
+  loginIpLimiter,
+  loginEmailLimiter,
   forgotPasswordIpLimiter,
   forgotPasswordEmailLimiter,
+  resetPasswordIpLimiter,
+  changePasswordIpLimiter,
 } from "../../middlewares/resendVerifyRateLimit.middleware.js";
 import authenticate from "../../middlewares/authenticate.middleware.js";
 import { getMe } from "./auth.controller.js";
+import { issueCsrfToken } from "../../middlewares/csrf.middleware.js";
 
 const router = Router();
 
-router.post("/register", validate(registerSchema), register);
-router.post("/verify-email", validate(verifyEmailSchema), verifyEmail);
+router.get("/csrf-token", issueCsrfToken);
+
+router.post(
+  "/register",
+  registerIpLimiter,
+  validate(registerSchema),
+  registerEmailLimiter,
+  register,
+);
+
+router.post(
+  "/verify-email",
+  verifyEmailIpLimiter,
+  validate(verifyEmailSchema),
+  verifyEmail,
+);
 
 router.post(
   "/resend-verification",
@@ -41,7 +63,13 @@ router.post(
   resendVerification,
 );
 
-router.post("/login", validate(loginSchema), login);
+router.post(
+  "/login",
+  loginIpLimiter,
+  validate(loginSchema),
+  loginEmailLimiter,
+  login,
+);
 
 router.post(
   "/forgot-password",
@@ -51,10 +79,16 @@ router.post(
   forgotPassword,
 );
 
-router.post("/reset-password", validate(resetPasswordSchema), resetPasswordHandler);
+router.post(
+  "/reset-password",
+  resetPasswordIpLimiter,
+  validate(resetPasswordSchema),
+  resetPasswordHandler,
+);
 
 router.post(
   "/change-password",
+  changePasswordIpLimiter,
   authenticate,
   validate(changePasswordSchema),
   changePasswordHandler,

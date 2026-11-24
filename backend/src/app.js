@@ -1,7 +1,10 @@
 import express from "express";
+import cookieParser from "cookie-parser";
+import cors from "cors";
+
 import errorHandler from "./middlewares/errorHandler.middleware.js";
 import notFound from "./middlewares/notFound.middleware.js";
-import cookieParser from "cookie-parser";
+import csrfProtection from "./middlewares/csrf.middleware.js";
 import authRoutes from "./modules/auth/auth.routes.js";
 import studentRoutes from "./modules/students/student.routes.js";
 import subjectRoutes from "./modules/subjects/subject.routes.js";
@@ -13,9 +16,17 @@ import settingsRoutes from "./modules/settings/settings.routes.js";
 
 const app = express();
 
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL,
+    credentials: true,
+  }),
+);
+
 // Parse incoming JSON requests
 app.use(express.json());
 app.use(cookieParser());
+app.use(csrfProtection);
 
 // Basic health check
 app.get("/health", (req, res) => {
