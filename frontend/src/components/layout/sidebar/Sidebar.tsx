@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useAuth } from "@/features/auth";
 
 const navigationItems = [
   { label: "Dashboard", href: "/dashboard" },
@@ -78,6 +79,26 @@ function SidebarNavigation({ onNavigate }: { onNavigate: () => void }) {
 }
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
+  const { logout } = useAuth();
+  const [isLoggingOut, setLoggingOut] = useState(false);
+  const [logoutError, setLogoutError] = useState<string | null>(null);
+
+  async function handleLogout() {
+    if (isLoggingOut) return;
+
+    setLoggingOut(true);
+    setLogoutError(null);
+
+    try {
+      await logout();
+      onClose();
+    } catch {
+      setLogoutError("Logout could not be confirmed. Please try again.");
+    } finally {
+      setLoggingOut(false);
+    }
+  }
+
   return (
     <>
       <div
@@ -109,6 +130,19 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         <SidebarNavigation onNavigate={onClose} />
 
         <div className="border-t border-border pt-4">
+          {logoutError ? (
+            <p role="alert" className="mb-3 px-2 text-xs text-danger">
+              {logoutError}
+            </p>
+          ) : null}
+          <button
+            type="button"
+            className="mb-4 w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-secondary-text transition-colors hover:bg-surface-secondary hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-60"
+            onClick={handleLogout}
+            disabled={isLoggingOut}
+          >
+            {isLoggingOut ? "Signing out..." : "Sign out"}
+          </button>
           <p className="px-2 text-xs text-secondary-text">EduLearn © 2026</p>
         </div>
       </aside>

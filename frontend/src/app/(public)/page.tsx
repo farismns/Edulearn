@@ -9,9 +9,8 @@ export default function Home() {
   async function testConnection() {
     try {
       const response = await apiFetch("/health");
-      const data = await response.json();
 
-      setStatus(data.message);
+      setStatus(response.message || "Connected");
     } catch (error) {
       console.error(error);
       setStatus("Connection failed");
