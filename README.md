@@ -1,4 +1,4 @@
-# EduLearn
+# EduLearn - ongoing
 
 EduLearn is a web-based tutoring management application designed to help independent tutors manage students, subjects, schedules, learning records, and monthly parent reports in one centralized platform.
 
